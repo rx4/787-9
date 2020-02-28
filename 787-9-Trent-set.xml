@@ -509,11 +509,9 @@
 				<td>0.001</td>
 			</pitch>
 			<cmd>
-				<roll-kp>-1.6</roll-kp>
-				<vorloc>-2.2</vorloc>
+				<hdg>1.6</hdg>
+				<vorloc>2.2</vorloc>
 				<alt-gain>-5</alt-gain>
-				<vs-low>0.0029</vs-low> <!-- Kp at low speed -->
-				<vs-high>0.0010</vs-high> <!-- Kp at high speed -->
 			</cmd>
 			<autoland> 
 				<pitch-kp>0.0051</pitch-kp>
@@ -527,14 +525,14 @@
 		</config>
 		<settings>
 			<auto-bank-max-deg>25</auto-bank-max-deg> <!-- Maximum Auto Bank Limit -->
-			<disable-final>0</disable-final> <!-- Disable the Final Controllers -->
+			<disable-final>0</disable-final> <!-- Disable the Final Controllers, for custom FCS integration -->
 			<land-enable>1</land-enable> <!-- Enable/Disable Autoland -->
 			<land-flap>0.7</land-flap> <!-- Minimum Flap used for Landing -->
 			<retard-ft>50</retard-ft> <!-- Enable Thrust Retard -->
 			<retard-enable>1</retard-enable> <!-- AGL to Thrust Retard -->
 			<togaspd>160</togaspd> <!-- V2 + 10kts -->
-			<lat-agl-ft>50</lat-agl-ft> <!-- Set to 999999 if you do not want T/O to change automatically to LNAV (if armed) -->
-			<reduc-agl-ft>1500</reduc-agl-ft> <!-- Set to 999999 if you do not want TOGA to change automatically to FLCH -->
+			<lat-agl-ft>50</lat-agl-ft> <!-- AGL when LNAV becomes active if armed -->
+			<reduc-agl-ft>1500</reduc-agl-ft> <!-- AGL when T/O CLB changes to SPD CLB (FLCH), set to 0 to disable -->
 			<autoland-without-ap>1</autoland-without-ap> <!-- Engage LAND and FLARE Modes even if the AP is off -->
 		</settings>
 	</it-autoflight>
@@ -826,17 +824,6 @@
 
 	<input>
 		<keyboard>
- 			<key n="267">
-			<name>F11</name>
-				<desc>Pop up autopilot dialog</desc>
-				<binding>
-							<command>nasal</command>
-							<script>
-							 var ap_dialog = gui.Dialog.new("sim/gui/dialogs/ap_dialog/dialog", "Aircraft/787-9/Systems/autopilot-dlg.xml");
-							 ap_dialog.open();
-							</script>
-				</binding>
-			</key>
 			<key n="127">
 				<name>Delete</name>
 				<desc>Toggle thrust reversers</desc>

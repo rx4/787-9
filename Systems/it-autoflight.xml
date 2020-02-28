@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <!-- IT-AUTOFLIGHT -->
-<!-- Copyright (c) 2017-2018 Joshua Davidson (it0uchpods) -->
+<!-- Copyright (c) 2019 Joshua Davidson (Octal450) -->
 
 <PropertyList>
 	
@@ -172,7 +172,7 @@
 				</equals>
 			</condition>
 		</enable>
-        <input>
+		<input>
 			<expression>
 				<floor>
 					<sum>
@@ -197,7 +197,7 @@
 				</equals>
 			</condition>
 		</enable>
-        <input>
+		<input>
 			<expression>
 				<div>
 					<floor>
@@ -222,7 +222,7 @@
 		<gain>1.0</gain>
 		<input>
 			<condition>
-				<property>/instrumentation/efis/mfd/true-north</property>
+				<property>/it-autoflight/input/true-course</property>
 			</condition>
 			<property>/orientation/heading-deg</property>
 		</input>
@@ -386,6 +386,16 @@
 		<max-rate-of-change>
 			<condition>
 				<and>
+					<or>
+						<equals>
+							<property>/it-autoflight/output/ap1</property>
+							<value>1</value>
+						</equals>
+						<equals>
+							<property>/it-autoflight/output/ap2</property>
+							<value>1</value>
+						</equals>
+					</or>
 					<equals>
 						<property>/it-autoflight/output/vert</property>
 						<value>1</value>
@@ -570,7 +580,7 @@
 				<sum>
 					<div>
 						<property>/orientation/roll-deg</property>
-						<property>/it-autoflight/config/cmd/roll-kp</property>
+						<property>/it-autoflight/config/cmd/hdg-kp</property>
 					</div>
 					<property>/it-autoflight/internal/heading-deg</property>
 				</sum>
@@ -587,7 +597,7 @@
 				<sum>
 					<div>
 						<property>/orientation/roll-deg</property>
-						<property>/it-autoflight/config/cmd/roll-kp</property>
+						<property>/it-autoflight/config/cmd/hdg-kp</property>
 					</div>
 					<property>/it-autoflight/internal/track-deg</property>
 				</sum>
@@ -603,10 +613,10 @@
 		<gain>1.0</gain>
 		<input>
 			<condition>
-				<greater-than>
+				<greater-than-equals>
 					<property>/it-autoflight/internal/heading-predicted-cmd</property>
-					<value>360</value>
-				</greater-than>
+					<value>360.5</value>
+				</greater-than-equals>
 			</condition>
 			<expression>
 				<dif>
@@ -619,7 +629,7 @@
 			<condition>
 				<less-than>
 					<property>/it-autoflight/internal/heading-predicted-cmd</property>
-					<value>1</value>
+					<value>0.5</value>
 				</less-than>
 			</condition>
 			<expression>
@@ -673,9 +683,11 @@
 	
 	<!-- Roll Axis -->
 	
-	<pi-simple-controller>
-		<name>ROLL CONTROLLER: HDG/LNAV</name>
+	<filter>
+		<name>IT-CONTROLLER: HDG/LNAV ROLL</name>
 		<debug>false</debug>
+		<type>gain</type>
+		<gain>/it-autoflight/config/cmd/hdg-kp</gain>
 		<enable>
 			<condition>
 				<and>
@@ -713,22 +725,18 @@
 		<input>/it-autoflight/internal/heading-error-deg</input>
 		<reference>0</reference>
 		<output>/it-autoflight/internal/target-roll-deg</output>
-		<config>
-			<Kp>
-				<property>/it-autoflight/config/cmd/roll-kp</property>
-			</Kp>
-			<Ki>-0.000001</Ki>
-			<min>
-				<property>/it-autoflight/internal/bank-limit</property>
-				<scale>-1.0</scale>
-			</min>
-			<max>/it-autoflight/internal/bank-limit</max>
-		</config>
-	</pi-simple-controller>
+		<min>
+			<property>/it-autoflight/internal/bank-limit</property>
+			<scale>-1.0</scale>
+		</min>
+		<max>/it-autoflight/internal/bank-limit</max>
+	</filter>
 	
-	<pi-simple-controller>
-		<name>VORLOC TRK</name>
+	<filter>
+		<name>IT-CONTROLLER: VORLOC ROLL</name>
 		<debug>false</debug>
+		<type>gain</type>
+		<gain>/it-autoflight/config/cmd/vorloc</gain>
 		<enable>
 			<condition>
 				<and>
@@ -760,18 +768,12 @@
 		<input>/it-autoflight/internal/nav-heading-error-deg</input>
 		<reference>0</reference>
 		<output>/it-autoflight/internal/target-roll-deg</output>
-		<config>
-			<Kp>
-				<property>/it-autoflight/config/cmd/vorloc</property>
-			</Kp>
-			<Ki>-0.0001</Ki>
-			<min>
-				<property>/it-autoflight/internal/bank-limit</property>
-				<scale>-1.0</scale>
-			</min>
-			<max>/it-autoflight/internal/bank-limit</max>
-		</config>
-	</pi-simple-controller>
+		<min>
+			<property>/it-autoflight/internal/bank-limit</property>
+			<scale>-1.0</scale>
+		</min>
+		<max>/it-autoflight/internal/bank-limit</max>
+	</filter>
 	
 	<filter>
 		<name>ROLL DEG SYNC</name>
@@ -964,7 +966,18 @@
 				</or>
 			</condition>
 		</enable>
-		<input>/orientation/roll-deg</input>
+		<input>
+			<expression>
+				<table>
+					<property>/orientation/roll-deg</property>
+					<entry><ind>-30</ind><dep>-30</dep></entry>
+					<entry><ind> -1</ind><dep>  0</dep></entry>
+					<entry><ind>  0</ind><dep>  0</dep></entry>
+					<entry><ind>  1</ind><dep>  0</dep></entry>
+					<entry><ind> 30</ind><dep> 30</dep></entry>
+				</table>
+			</expression>
+		</input>
 		<reference>0</reference>
 		<output>/it-autoflight/internal/aileron-rollout</output>
 	</filter>
@@ -1036,6 +1049,18 @@
 		<max>/it-autoflight/internal/max-vs</max>
 	</filter>
 	
+	<filter>
+		<name>FPA ERROR</name>
+		<debug>false</debug>
+		<type>gain</type>
+		<gain>1.0</gain>
+		<input>/it-autoflight/internal/fpa</input>
+		<reference>/it-autoflight/input/fpa</reference>
+		<output>/it-autoflight/internal/fpa-error</output>
+		<min>-1.5</min>
+		<max>1.5</max>
+	</filter>
+	
 	<pid-controller>
 		<name>FPA HOLD</name>
 		<debug>false</debug>
@@ -1067,14 +1092,35 @@
 				</and>
 			</condition>
 		</enable>
-		<input>/it-autoflight/internal/fpa</input>
-		<reference>/it-autoflight/input/fpa</reference>
+		<input>/it-autoflight/internal/fpa-error</input>
+		<reference>0</reference>
 		<output>/it-autoflight/internal/target-fpm-d</output>
 		<config>
 			<Kp>
-				<property>/it-autoflight/config/cmd/vs-kp</property>
+				<expression>
+					<table>
+						<property>/velocities/airspeed-kt</property>
+						<entry><ind>140</ind><dep>120</dep></entry>
+						<entry><ind>360</ind><dep>340</dep></entry>
+					</table>
+				</expression>
 			</Kp>
-			<Ti>2.0</Ti>
+			<Ti>
+				<condition>
+					<or>
+						<equals>
+							<property>/it-autoflight/output/ap1</property>
+							<value>1</value>
+						</equals>
+						<equals>
+							<property>/it-autoflight/output/ap2</property>
+							<value>1</value>
+						</equals>
+					</or>
+				</condition>
+				<value>2.0</value>
+			</Ti>
+			<Ti>10.0</Ti>
 			<Td>0.002</Td>
 			<u_min>
 				<expression>
@@ -1149,7 +1195,7 @@
 				</equals>
 			</condition>
 			<property>/it-autoflight/internal/lookahead-15-sec-mach</property>
-			<scale>1000.0</scale>
+			<scale>750.0</scale>
 		</input>
 		<reference>
 			<condition>
@@ -1168,11 +1214,9 @@
 				</equals>
 			</condition>
 			<property>/it-autoflight/internal/flch-mach</property>
-			<scale>1000.0</scale>
+			<scale>750.0</scale>
 		</reference>
-		<output>
-			<property>/it-autoflight/internal/target-fpm-b</property>
-		</output>
+		<output>/it-autoflight/internal/target-fpm-b</output>
 		<config>
 			<Kp>
 				<condition>
@@ -1312,7 +1356,7 @@
 			<expression>
 				<table>
 					<property>/position/gear-agl-ft</property> 
-					<entry><ind>100</ind><dep>-600</dep></entry>
+					<entry><ind>100</ind><dep>-650</dep></entry>
 					<entry><ind> 50</ind><dep>-500</dep></entry>
 					<entry><ind> 40</ind><dep>-400</dep></entry>
 					<entry><ind> 30</ind><dep>-300</dep></entry>
@@ -1554,7 +1598,13 @@
 						<value>6</value>
 					</not-equals>
 				</condition>
-				<property>/it-autoflight/config/cmd/vs-kp</property>
+				<expression>
+					<table>
+						<property>/velocities/airspeed-kt</property>
+						<entry><ind>140</ind><dep>0.0029</dep></entry>
+						<entry><ind>360</ind><dep>0.0009</dep></entry>
+					</table>
+				</expression>
 			</Kp>
 			<Kp>
 				<condition>
@@ -1977,7 +2027,7 @@
 		</input>
 		<input>0</input>
 		<output>/controls/flight/rudder</output>
-		<max-rate-of-change>0.6</max-rate-of-change>
+		<max-rate-of-change>1.2</max-rate-of-change>
 	</filter>
 	
 	<!-- Flight Director -->
